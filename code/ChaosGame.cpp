@@ -14,10 +14,10 @@ int main()
 {
 	srand(static_cast<unsigned>(time(0)));
 	// Create a video mode object
-	VideoMode vm(500, 500);
+	VideoMode vm(1920, 1080);
 	// Create and open a window for the game
 	RenderWindow window(vm, "Chaos Game!!", Style::Default);
-	
+
 	vector<Vector2f> vertices;
 	vector<Vector2f> points;
 
@@ -27,7 +27,7 @@ int main()
 	{
 		cout << "file not found" << endl;
 	}
-	
+
 	Text text;
 	text.setCharacterSize(24);
 	text.setFillColor(Color::Yellow);
@@ -55,7 +55,7 @@ int main()
 			    std::cout << "the left button was pressed" << std::endl;
 			    std::cout << "mouse x: " << event.mouseButton.x << std::endl;
 			    std::cout << "mouse y: " << event.mouseButton.y << std::endl;
-	
+
 			    if(vertices.size() < 3)
 			    {
 				vertices.push_back(Vector2f(event.mouseButton.x, event.mouseButton.y));
@@ -79,7 +79,6 @@ int main()
 		Update
 		****************************************
 		*/
-	
 		if (points.size() > 0)
 		{
 			for (int i = 0; i < 100; i++)
@@ -106,19 +105,20 @@ int main()
 			text.setString("Choose 3 points for your triangle");
 			window.draw(text);
 		}
-		else {
+		else if (points.size() == 0)
+		{
 			text.setString("Choose 4th point to start");
 			window.draw(text);
 		}
-		
-		for(int i = 0; i < vertices.size(); i++)
+
+		for (long unsigned int i = 0; i < vertices.size(); i++)
 		{
 		    RectangleShape rect(Vector2f(10,10));
 		    rect.setPosition(Vector2f(vertices[i].x, vertices[i].y));
 		    rect.setFillColor(Color::Blue);
 		    window.draw(rect);
 		}
-		for (int i = 0; i < points.size(); i++)
+		for (long unsigned int i = 0; i < points.size(); i++)
 		{
 			CircleShape circ(1);
 			circ.setPosition(Vector2f(points[i].x, points[i].y));

@@ -1,4 +1,3 @@
-
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
@@ -7,7 +6,6 @@
 #include <cstdlib>
 #include <cmath>
 
-// Make the code easier to type with "using namespace"
 using namespace sf;
 using namespace std;
 
@@ -22,11 +20,29 @@ Vector2f rotatePoint(const Vector2f& point, const Vector2f& pivot, float angle) 
     return Vector2f(xNew, yNew);
 }
 
+
+float distance(const Vector2f& p1, const Vector2f& p2) {
+    return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
+}
+
+
+Color getColorBasedOnDistance(const Vector2f& point, const Vector2f& centroid) {
+    float dist = distance(point, centroid);
+    float maxDistance = 100.0f;
+    float ratio = dist / maxDistance;
+
+    int r = 255 * ratio;
+    int g = (sin(ratio * M_PI) + 1) * 127.5f;
+    int b = 255 * (1 - ratio);
+
+    return Color(r, g, b);
+}
+
 int main()
 {
     srand(static_cast<unsigned>(time(0)));
 
-    VideoMode vm(750, 750);
+    VideoMode vm(1700, 800);
     RenderWindow window(vm, "Chaos Game!!", Style::Default);
 
     vector<Vector2f> vertices;
@@ -46,6 +62,7 @@ int main()
 
     float angle = 1.0;
     bool rotate = false;
+    int spawnSpeed = 2;
 
     while (window.isOpen())
     {
@@ -56,18 +73,24 @@ int main()
             {
                 window.close();
             }
+	    if (event.type == sf::Event::MouseWheelMoved)
+	    {
+		if (spawnSpeed + event.mouseWheel.delta >= 0) { spawnSpeed += event.mouseWheel.delta; }
+		else { spawnSpeed = 0; }
+		cout << "Current spawn rate: " << spawnSpeed << endl;
+	    }
             if (event.type == Event::MouseButtonPressed)
             {
-		if (event.mouseButton.button == Mouse::Right)
-		{
-			rotate = !rotate;
-		}
+                if (event.mouseButton.button == Mouse::Right)
+                {
+                    rotate = !rotate;
+		    if (rotate) { cout << "Rotation started" << endl; }
+		    else { cout << "Rotation ended" << endl; }
+                }
 
                 if (event.mouseButton.button == Mouse::Left)
                 {
-                    cout << "the left button was pressed" << endl;
-                    cout << "mouse x: " << event.mouseButton.x << endl;
-                    cout << "mouse y: " << event.mouseButton.y << endl;
+                    cout << "Left mouse " << "x: " << event.mouseButton.x << "y: " << event.mouseButton.y << endl;
 
                     if (vertices.size() < 3)
                     {
@@ -99,9 +122,9 @@ int main()
             }
         }
 
-        if (points.size() > 0)
+        if (points.size() > 0 && spawnSpeed != 0)
         {
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i <= spawnSpeed; i++)
             {
                 int randV = rand() % 3;
                 float midPointX = (points.back().x + vertices[randV].x) / 2;
@@ -132,12 +155,17 @@ int main()
             window.draw(rect);
         }
 
-        for (long unsigned int i = 0; i < points.size(); i++)
-        {
-            CircleShape circ(1);
-            circ.setPosition(points[i]);
-            circ.setFillColor(Color::White);
-            window.draw(circ);
+        if (vertices.size() == 3) {
+            float centerX = (vertices[0].x + vertices[1].x + vertices[2].x) / 3;
+            float centerY = (vertices[0].y + vertices[1].y + vertices[2].y) / 3;
+            Vector2f centroid(centerX, centerY);
+            for (long unsigned int i = 0; i < points.size(); i++)
+            {
+                CircleShape circ(1);
+                circ.setPosition(points[i]);
+                circ.setFillColor(getColorBasedOnDistance(points[i], centroid));
+                window.draw(circ);
+            }
         }
 
         window.display();
